@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recomendador de Canciones</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <!-- Cabecera de navegación -->
+    <header>
+        <h1><a href="/">Sistema de Recomendación de Canciones</a></h1>
+    </header>
+
+    <div class="container">
+        <!-- Formulario de selección de canción -->
+        <form action="/recommend" method="POST">
+            <label for="song">Selecciona una canción:</label>
+            <select name="song_index" id="song">
+                {% for song in songs %}
+                <option value="{{ loop.index0 }}" {% if selected_song == loop.index0 %}selected{% endif %}>
+                    {{ song['title'] }} - {{ song['artist'] }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit">Recomendar</button>
+        </form>
+
+        {% if recommendations %}
+        <h2>Recomendaciones por Técnica de Indexación</h2>
+
+        <h3>Top 5 - KD-Tree</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Artista</th>
+                    <th>Género</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for song in recommendations.kd_tree %}
+                <tr>
+                    <td>{{ song['title'] }}</td>
+                    <td>{{ song['artist'] }}</td>
+                    <td>{{ song['genre'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Top 5 - HNSW</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Artista</th>
+                    <th>Género</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for song in recommendations.hnsw %}
+                <tr>
+                    <td>{{ song['title'] }}</td>
+                    <td>{{ song['artist'] }}</td>
+                    <td>{{ song['genre'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+
+    <!-- Footer con el botón de actualización -->
+    <footer>
+        <button type="button" onclick="updateSystem()">Actualizar Canciones</button>
+    </footer>
+
+    <script>
+        function updateSystem() {
+            fetch('/update', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Sistema actualizado con nuevas canciones.');
+                        location.reload();  // Recargar la página para mostrar las nuevas canciones
+                    } else {
+                        alert('Error al actualizar el sistema.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud de actualización:', error);
+                    alert('Error al actualizar el sistema.');
+                });
+        }
+    </script>
+</body>
+</html>
